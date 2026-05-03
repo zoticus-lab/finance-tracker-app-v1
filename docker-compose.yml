@@ -1,0 +1,27 @@
+services:
+  backend:
+    build: ./backend
+    container_name: finance_backend
+    restart: always
+    ports:
+      - "5001:5001"
+    environment:
+      - DB_HOST=finance_db
+      - DB_USER=root
+      - DB_PASSWORD=ArulFinance2026
+      - DB_NAME=personal_finance_tracker
+    networks:
+      - finance-db_default
+
+  frontend:
+    build: ./frontend
+    container_name: finance_frontend
+    restart: always
+    ports:
+      - "5175:5175"
+    networks:
+      - finance-db_default
+
+networks:
+  finance-db_default:
+    external: true
