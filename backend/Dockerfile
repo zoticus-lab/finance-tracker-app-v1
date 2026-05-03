@@ -2,6 +2,7 @@ FROM php:8.1-apache
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
+    build-essential \
     git \
     curl \
     wget \
@@ -10,26 +11,23 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     libzip-dev \
-    libpq-dev \
-    libjpeg-dev \
-    libpng-dev \
-    libfreetype6-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions required by Laravel
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
-    docker-php-ext-install -j$(nproc) \
+# Install PHP extensions required by Laravel (basic set)
+RUN docker-php-ext-install -j$(nproc) \
     pdo \
     pdo_mysql \
+    mbstring \
+    tokenizer \
+    xml \
+    zip
+
+# Install additional extensions separately
+RUN docker-php-ext-install -j$(nproc) \
     ctype \
     dom \
     fileinfo \
     filter \
-    gd \
-    mbstring \
-    tokenizer \
-    xml \
-    zip \
     exif \
     pcntl \
     bcmath
