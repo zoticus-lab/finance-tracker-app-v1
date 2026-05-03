@@ -6,7 +6,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     wget \
     unzip \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
+
+# Upgrade composer to latest
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Set PHP memory limit
+RUN echo "memory_limit = -1" > /usr/local/etc/php/conf.d/composer.ini
 
 # Enable mod_rewrite for Apache
 RUN a2enmod rewrite
@@ -14,11 +21,23 @@ RUN a2enmod rewrite
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy application files (including vendor folder that was generated locally)
-COPY . .
+# Copy composer files
+COPY composer.json composer.lock* ./
+
+# Install composer dependencies
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --no-progress \
+    --prefer-dist \
+    --ignore-platform-reqs \
+    --no-scripts || true
 
 # Copy .env
 COPY .env.example .env
+
+# Copy application files
+COPY . .
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html
