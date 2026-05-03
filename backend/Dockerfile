@@ -6,7 +6,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     wget \
     unzip \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
+
+# Set PHP memory limit for composer
+RUN echo "memory_limit = -1" > /usr/local/etc/php/conf.d/composer.ini
 
 # Enable mod_rewrite for Apache
 RUN a2enmod rewrite
@@ -17,13 +21,21 @@ WORKDIR /var/www/html
 # Copy composer from official composer image
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy composer files first
+# Copy .env early
+COPY .env.example .env
+
+# Copy composer files
 COPY composer.json composer.lock* ./
 
-# Install composer dependencies
-# First create .env so that Laravel doesn't try to generate keys during install
-COPY .env.example .env
-RUN composer install --no-dev --no-interaction --no-progress --prefer-dist
+# Install composer dependencies with better error handling
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --no-progress \
+    --prefer-dist \
+    --ignore-platform-reqs || \
+    (echo "Composer install failed, trying with different options..." && \
+     composer install --no-dev --no-interaction --no-progress --ignore-platform-reqs)
 
 # Copy application files
 COPY . .
