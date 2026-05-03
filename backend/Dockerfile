@@ -17,8 +17,13 @@ WORKDIR /var/www/html
 # Copy composer from official composer image
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy .env
+# Copy composer files first
+COPY composer.json composer.lock* ./
+
+# Install composer dependencies
+# First create .env so that Laravel doesn't try to generate keys during install
 COPY .env.example .env
+RUN composer install --no-dev --no-interaction --no-progress --prefer-dist
 
 # Copy application files
 COPY . .
