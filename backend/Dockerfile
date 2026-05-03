@@ -17,21 +17,16 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions required by Laravel
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg
-RUN docker-php-ext-install -j$(nproc) \
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
+    docker-php-ext-install -j$(nproc) \
+    pdo \
+    pdo_mysql \
     ctype \
-    curl \
     dom \
     fileinfo \
     filter \
     gd \
-    hash \
-    json \
     mbstring \
-    openssl \
-    pdo \
-    pdo_mysql \
-    pcre \
     tokenizer \
     xml \
     zip \
