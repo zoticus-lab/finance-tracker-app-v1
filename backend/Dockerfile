@@ -1,17 +1,12 @@
 FROM php:8.1-apache
 
-# Install system dependencies with proper development packages
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
     wget \
-    zip \
     unzip \
-    libmysqlclient-dev \
     && rm -rf /var/lib/apt/lists/*
-
-# Install essential PHP extensions one by one
-RUN docker-php-ext-install pdo_mysql
 
 # Enable mod_rewrite for Apache
 RUN a2enmod rewrite
@@ -22,26 +17,15 @@ WORKDIR /var/www/html
 # Copy composer from official composer image
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set PHP memory limit for composer
-RUN echo "memory_limit = -1" > /usr/local/etc/php/conf.d/composer-memory.ini
-
-# Copy .env first
+# Copy .env
 COPY .env.example .env
-
-# Copy composer files
-COPY composer.json composer.lock* ./
-
-# Install PHP dependencies with better error handling
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress || \
-    (composer install --no-dev --no-interaction --no-progress 2>&1 | tail -20 && exit 1)
 
 # Copy application files
 COPY . .
 
-# Create storage directories and set permissions
-RUN mkdir -p storage/logs bootstrap/cache
-RUN chmod -R 755 storage bootstrap/cache
+# Set permissions
 RUN chown -R www-data:www-data /var/www/html
+RUN chmod -R 755 storage bootstrap/cache
 
 # Configure Apache VirtualHost
 RUN echo '<VirtualHost *:5001>\n\
