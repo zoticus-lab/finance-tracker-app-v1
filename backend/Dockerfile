@@ -7,7 +7,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     unzip \
     ca-certificates \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
+
+# Install PDO MySQL extension (critical for database connection)
+RUN docker-php-ext-install pdo_mysql
 
 # Upgrade composer to latest
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
