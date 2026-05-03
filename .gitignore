@@ -4,6 +4,7 @@
 /backend/.env
 /backend/.env.backup
 /backend/.env.production
+/backend/.env.local
 /backend/.phpunit.cache
 /backend/.phpunit.result.cache
 /backend/public/build
@@ -22,6 +23,7 @@
 # Frontend
 /frontend/node_modules
 /frontend/dist
+/frontend/.env
 /frontend/.env.local
 /frontend/*.local
 /frontend/.DS_Store
