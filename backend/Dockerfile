@@ -43,6 +43,14 @@ COPY .env.example .env
 # Copy application files
 COPY . .
 
+# Generate APP_KEY if it's still placeholder
+RUN if grep -q "APP_KEY=base64:your-app-key-here" .env; then \
+        php artisan key:generate --force; \
+    fi
+
+# Run migrations on startup
+RUN echo '#!/bin/bash\nphp /var/www/html/artisan migrate --force\napache2-foreground' > /start.sh && chmod +x /start.sh
+
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html
 RUN chmod -R 755 storage bootstrap/cache
@@ -71,5 +79,5 @@ RUN echo 'Listen 5001' >> /etc/apache2/ports.conf
 # Expose port
 EXPOSE 5001
 
-# Start Apache
-CMD ["apache2-foreground"]
+# Start Apache with migrations
+CMD ["/start.sh"]
