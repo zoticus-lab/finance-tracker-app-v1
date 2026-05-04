@@ -48,8 +48,35 @@ RUN if grep -q "APP_KEY=base64:your-app-key-here" .env; then \
         php artisan key:generate --force; \
     fi
 
-# Run migrations on startup
-RUN echo '#!/bin/bash\nphp /var/www/html/artisan migrate --force\napache2-foreground' > /start.sh && chmod +x /start.sh
+# Create entrypoint script that updates .env from docker-compose environment
+RUN echo '#!/bin/bash\n\
+# Update .env from environment variables\n\
+[ ! -z "$DB_PASSWORD" ] && sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=$DB_PASSWORD|" .env\n\
+[ ! -z "$DB_USERNAME" ] && sed -i "s|DB_USERNAME=.*|DB_USERNAME=$DB_USERNAME|" .env\n\
+[ ! -z "$DB_NAME" ] && sed -i "s|DB_DATABASE=.*|DB_DATABASE=$DB_NAME|" .env\n\
+[ ! -z "$DB_HOST" ] && sed -i "s|DB_HOST=.*|DB_HOST=$DB_HOST|" .env\n\
+\n\
+# Run migrations\n\
+php artisan migrate --force\n\
+\n\
+# Start Apache\n\
+apache2-foreground\n\
+' > /docker-entrypoint.sh && chmod +x /docker-entrypoint.sh
+
+# Create entrypoint script that updates .env from docker-compose environment
+RUN echo '#!/bin/bash\n\
+# Update .env from environment variables\n\
+[ ! -z "$DB_PASSWORD" ] && sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=$DB_PASSWORD|" .env\n\
+[ ! -z "$DB_USERNAME" ] && sed -i "s|DB_USERNAME=.*|DB_USERNAME=$DB_USERNAME|" .env\n\
+[ ! -z "$DB_NAME" ] && sed -i "s|DB_DATABASE=.*|DB_DATABASE=$DB_NAME|" .env\n\
+[ ! -z "$DB_HOST" ] && sed -i "s|DB_HOST=.*|DB_HOST=$DB_HOST|" .env\n\
+\n\
+# Run migrations\n\
+php artisan migrate --force\n\
+\n\
+# Start Apache\n\
+apache2-foreground\n\
+' > /docker-entrypoint.sh && chmod +x /docker-entrypoint.sh
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html
@@ -79,5 +106,5 @@ RUN echo 'Listen 5001' >> /etc/apache2/ports.conf
 # Expose port
 EXPOSE 5001
 
-# Start Apache with migrations
-CMD ["/start.sh"]
+# Start using entrypoint script that handles env variables
+CMD ["/docker-entrypoint.sh"]
