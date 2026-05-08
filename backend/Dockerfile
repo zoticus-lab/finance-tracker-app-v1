@@ -53,7 +53,11 @@ set -e\n\
 # Check if vendor exists, if not install dependencies\n\
 if [ ! -f "vendor/autoload.php" ]; then\n\
     echo "Installing Composer dependencies..."\n\
-    composer install --no-dev --no-interaction --no-progress --prefer-dist --ignore-platform-reqs || true\n\
+    # Try with lock file first, if it fails due to missing packages, update\n\
+    composer install --no-dev --no-interaction --no-progress --prefer-dist --ignore-platform-reqs 2>&1 || {\n\
+        echo "Lock file outdated, updating..."\n\
+        composer update --no-dev --no-interaction --no-progress --prefer-dist --ignore-platform-reqs\n\
+    }\n\
 fi\n\
 \n\
 # Update .env from environment variables\n\
