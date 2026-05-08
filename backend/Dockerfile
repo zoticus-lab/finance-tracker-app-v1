@@ -28,8 +28,8 @@ WORKDIR /var/www/html
 # Copy composer files
 COPY composer.json composer.lock* ./
 
-# Install composer dependencies with better error handling
-RUN composer install \
+# Install composer dependencies - use update to refresh lock file if out of sync
+RUN composer update \
     --no-dev \
     --no-interaction \
     --no-progress \
@@ -50,10 +50,10 @@ RUN mkdir -p storage/logs && mkdir -p bootstrap/cache
 RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
-# Install/update Composer dependencies if vendor is missing\n\
+# Install/update Composer dependencies if vendor is missing
 if [ ! -f "vendor/autoload.php" ]; then\n\
     echo "Installing Composer dependencies..."\n\
-    composer install --no-dev --no-interaction --no-progress --prefer-dist --ignore-platform-reqs\n\
+    composer update --no-dev --no-interaction --no-progress --prefer-dist --ignore-platform-reqs\n\
 fi\n\
 \n\
 # Update .env from environment variables\n\
