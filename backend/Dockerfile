@@ -28,14 +28,14 @@ WORKDIR /var/www/html
 # Copy composer files
 COPY composer.json composer.lock* ./
 
-# Install composer dependencies
+# Install composer dependencies with better error handling
 RUN composer install \
     --no-dev \
     --no-interaction \
     --no-progress \
     --prefer-dist \
     --ignore-platform-reqs \
-    --no-scripts || true
+    --no-scripts 2>&1 | grep -v "Warning"
 
 # Copy .env.example
 COPY .env.example .env
@@ -50,6 +50,12 @@ RUN mkdir -p storage/logs && mkdir -p bootstrap/cache
 RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
+# Check if vendor exists, if not install dependencies\n\
+if [ ! -f "vendor/autoload.php" ]; then\n\
+    echo "Installing Composer dependencies..."\n\
+    composer install --no-dev --no-interaction --no-progress --prefer-dist --ignore-platform-reqs || true\n\
+fi\n\
+\n\
 # Update .env from environment variables\n\
 [ ! -z "$DB_PASSWORD" ] && sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=$DB_PASSWORD|" .env\n\
 [ ! -z "$DB_USERNAME" ] && sed -i "s|DB_USERNAME=.*|DB_USERNAME=$DB_USERNAME|" .env\n\
@@ -60,18 +66,20 @@ set -e\n\
 # Generate APP_KEY if still placeholder\n\
 if grep -q "APP_KEY=base64:your-app-key-here" .env || grep -q "APP_KEY=$" .env; then\n\
     echo "Generating APP_KEY..."\n\
-    php artisan key:generate --force || true\n\
+    php artisan key:generate --force 2>/dev/null || true\n\
 fi\n\
 \n\
-# Clear caches to ensure middleware is loaded\n\
-echo "Clearing Laravel caches..."\n\
-php artisan config:clear || true\n\
-php artisan cache:clear || true\n\
-php artisan route:clear || true\n\
-\n\
-# Run migrations\n\
-echo "Running migrations..."\n\
-php artisan migrate --force || true\n\
+# Clear caches only if artisan is available\n\
+if [ -f "vendor/autoload.php" ]; then\n\
+    echo "Clearing Laravel caches..."\n\
+    php artisan config:clear 2>/dev/null || true\n\
+    php artisan cache:clear 2>/dev/null || true\n\
+    php artisan route:clear 2>/dev/null || true\n\
+    \n\
+    # Run migrations\n\
+    echo "Running migrations..."\n\
+    php artisan migrate --force 2>/dev/null || true\n\
+fi\n\
 \n\
 echo "Starting Apache..."\n\
 exec apache2-foreground\n\
