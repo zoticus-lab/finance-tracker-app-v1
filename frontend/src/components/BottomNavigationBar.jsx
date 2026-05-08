@@ -13,6 +13,7 @@ import {
   Banknote,
   Menu,
   LogOut,
+  Download,
 } from 'lucide-react';
 
 export default function BottomNavigationBar({ onAddClick }) {
@@ -28,6 +29,7 @@ export default function BottomNavigationBar({ onAddClick }) {
     { path: '/transactions', label: 'Transactions', icon: ArrowRightLeft },
     { path: '/budgets', label: 'Budgets', icon: TrendingUp },
     { path: '/reports', label: 'Reports', icon: PieChart },
+    { path: '/export', label: 'Export', icon: Download },
     { path: '/goals', label: 'Saving Goals', icon: Target },
     { path: '/categories', label: 'Categories', icon: Tags },
     { path: '/dashboard-cards', label: 'Cards', icon: LayoutDashboard },
