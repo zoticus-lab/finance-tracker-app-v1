@@ -63,6 +63,12 @@ if grep -q "APP_KEY=base64:your-app-key-here" .env || grep -q "APP_KEY=$" .env; 
     php artisan key:generate --force || true\n\
 fi\n\
 \n\
+# Clear caches to ensure middleware is loaded\n\
+echo "Clearing Laravel caches..."\n\
+php artisan config:clear || true\n\
+php artisan cache:clear || true\n\
+php artisan route:clear || true\n\
+\n\
 # Run migrations\n\
 echo "Running migrations..."\n\
 php artisan migrate --force || true\n\

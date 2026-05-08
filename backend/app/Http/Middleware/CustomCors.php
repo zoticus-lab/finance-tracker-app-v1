@@ -16,6 +16,10 @@ class CustomCors
      */
     public function handle(Request $request, Closure $next)
     {
+        $origin = $request->header('Origin');
+        
+        // Always allow requests - for development/testing
+        // In production, validate against whitelist
         $allowedOrigins = [
             'http://localhost:3000',
             'http://localhost:5175',
@@ -25,30 +29,29 @@ class CustomCors
             'http://100.64.168.127:3000',
         ];
 
-        $origin = $request->header('Origin');
-        
-        // Check if origin is allowed or allow all for development
-        $isAllowed = in_array($origin, $allowedOrigins) || true;
+        // For development, allow all origins
+        $corsOrigin = in_array($origin, $allowedOrigins) ? $origin : '*';
 
+        // Handle preflight requests
         if ($request->getMethod() === 'OPTIONS') {
-            // Preflight request
-            return response()
-                ->header('Access-Control-Allow-Origin', $origin ?: '*')
+            return response('')
+                ->header('Access-Control-Allow-Origin', $corsOrigin)
                 ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
-                ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
+                ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept')
                 ->header('Access-Control-Max-Age', '3600')
-                ->header('Access-Control-Allow-Credentials', 'true')
-                ->send();
+                ->header('Access-Control-Allow-Credentials', 'true');
         }
 
-        // Add CORS headers to response
+        // Process the request
         $response = $next($request);
-        
-        return $response
-            ->header('Access-Control-Allow-Origin', $origin ?: '*')
-            ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
-            ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
-            ->header('Access-Control-Allow-Credentials', 'true')
-            ->header('Access-Control-Expose-Headers', 'Authorization');
+
+        // Add CORS headers to response
+        $response->header('Access-Control-Allow-Origin', $corsOrigin);
+        $response->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+        $response->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
+        $response->header('Access-Control-Allow-Credentials', 'true');
+        $response->header('Access-Control-Expose-Headers', 'Authorization');
+
+        return $response;
     }
 }
