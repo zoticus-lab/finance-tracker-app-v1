@@ -26,7 +26,12 @@ api.interceptors.response.use(
       localStorage.removeItem('auth_token')
       window.location.href = '/login'
     }
-    return Promise.reject(error.response?.data || error.message)
+    // Extract error message from response or use default
+    const errorMessage = error.response?.data?.message || error.message || 'An error occurred'
+    const err = new Error(errorMessage)
+    err.data = error.response?.data
+    err.status = error.response?.status
+    return Promise.reject(err)
   }
 )
 
