@@ -9,6 +9,9 @@ class CustomCors
 {
     /**
      * Handle an incoming request.
+     * 
+     * This is a custom CORS middleware for Laravel 10+ compatibility.
+     * We use this instead of fruitcake/laravel-cors which only supports Laravel 6-9.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure  $next
