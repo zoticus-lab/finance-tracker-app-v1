@@ -15,7 +15,6 @@ use App\Http\Controllers\API\{
     CreditController,
     BackupController,
     ChatController,
-    ExportController,
 };
 
 /*
@@ -150,12 +149,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('export', [BackupController::class, 'export']);
         Route::post('import', [BackupController::class, 'import']);
         Route::post('rollback', [BackupController::class, 'rollbackLastImport']);
-    });
-
-    // Export Routes (Monthly Reports & Data Export)
-    Route::prefix('export')->group(function () {
-        Route::get('monthly', [ExportController::class, 'exportMonthly']);
-        Route::get('summary', [ExportController::class, 'getMonthlySummary']);
     });
 
 });

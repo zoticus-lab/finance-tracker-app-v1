@@ -17,7 +17,6 @@ import AccountsPage from './pages/AccountsPage';
 import TransactionPage from './pages/TransactionPage';
 import BudgetsPage from './pages/BudgetsPage';
 import ReportsPage from './pages/ReportsPage';
-import MonthlyExportPage from './pages/MonthlyExportPage';
 import CategoriesPage from './pages/CategoriesPage';
 import DashboardCardsPage from './pages/DashboardCardsPage';
 import DebtsCreditsPage from './pages/DebtsCreditsPage';
@@ -103,16 +102,6 @@ function AppRoutes() {
           <ProtectedRoute>
             <AppLayout>
               <ReportsPage />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/export"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <MonthlyExportPage />
             </AppLayout>
           </ProtectedRoute>
         }
