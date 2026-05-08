@@ -24,14 +24,14 @@ export default function MonthlyExportPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.get('/api/export/summary', {
+      const response = await api.get('/export/summary', {
         params: { year, month }
       });
-      if (response.data.success) {
-        setSummary(response.data.data);
+      if (response.success) {
+        setSummary(response.data);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch summary');
+      setError(err.message || 'Failed to fetch summary');
       console.error('Error fetching summary:', err);
     } finally {
       setLoading(false);
@@ -46,28 +46,29 @@ export default function MonthlyExportPage() {
   // Handle export ke format tertentu
   const handleExport = async (format) => {
     try {
-      const response = await api.get('/api/export/monthly', {
-        params: {
-          year: selectedYear,
-          month: selectedMonth,
-          format: format
-        },
-        responseType: format === 'json' ? 'json' : 'blob'
-      });
+      const params = {
+        year: selectedYear,
+        month: selectedMonth,
+        format: format
+      };
 
       if (format === 'json') {
-        // Download JSON file
-        const dataStr = JSON.stringify(response.data, null, 2);
+        // JSON format - use normal API call
+        const response = await api.get('/export/monthly', { params });
+        const dataStr = JSON.stringify(response, null, 2);
         downloadFile(dataStr, `financial_report_${selectedYear}_${selectedMonth}.json`, 'application/json');
-      } else if (format === 'csv') {
-        // CSV dihandle sebagai blob
-        downloadBlob(response.data, `financial_report_${selectedYear}_${selectedMonth}.csv`, 'text/csv');
-      } else if (format === 'pdf') {
-        // PDF dihandle sebagai blob
-        downloadBlob(response.data, `financial_report_${selectedYear}_${selectedMonth}.pdf`, 'application/pdf');
+      } else {
+        // CSV/PDF - need to use axios directly for blob response to bypass interceptor
+        const token = localStorage.getItem('auth_token');
+        const response = await api.get('/export/monthly', {
+          params,
+          responseType: 'blob',
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+        downloadBlob(response, `financial_report_${selectedYear}_${selectedMonth}.${format}`, `text/${format}`);
       }
     } catch (err) {
-      setError(err.response?.data?.message || `Failed to export as ${format.toUpperCase()}`);
+      setError(err.message || `Failed to export as ${format.toUpperCase()}`);
       console.error(`Error exporting ${format}:`, err);
     }
   };

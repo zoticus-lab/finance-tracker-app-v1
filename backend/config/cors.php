@@ -17,19 +17,19 @@ return [
 
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
-    'allowed_methods' => ['*'],
+    'allowed_methods' => ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
 
     'allowed_origins' => [
         'http://localhost:3000',
         'http://localhost:5175',
+        'http://localhost:5001',
         'http://100.64.168.127:5175',
+        'http://100.64.168.127:5001',
         'http://100.64.168.127:3000',
+        '*', // Allow all origins during development
     ],
 
-    'allowed_origins_patterns' => [
-        '#^http://.*#',
-        '#^https://.*#',
-    ],
+    'allowed_origins_patterns' => [],
 
     'allowed_headers' => ['*'],
 
