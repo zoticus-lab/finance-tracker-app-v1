@@ -37,45 +37,38 @@ RUN composer install \
     --ignore-platform-reqs \
     --no-scripts || true
 
-# Copy .env
+# Copy .env.example
 COPY .env.example .env
 
 # Copy application files
 COPY . .
 
-# Generate APP_KEY if it's still placeholder
-RUN if grep -q "APP_KEY=base64:your-app-key-here" .env; then \
-        php artisan key:generate --force; \
-    fi
+# Create storage directories
+RUN mkdir -p storage/logs && mkdir -p bootstrap/cache
 
-# Create entrypoint script that updates .env from docker-compose environment
+# Create entrypoint script that handles setup at runtime
 RUN echo '#!/bin/bash\n\
+set -e\n\
+\n\
 # Update .env from environment variables\n\
 [ ! -z "$DB_PASSWORD" ] && sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=$DB_PASSWORD|" .env\n\
 [ ! -z "$DB_USERNAME" ] && sed -i "s|DB_USERNAME=.*|DB_USERNAME=$DB_USERNAME|" .env\n\
 [ ! -z "$DB_NAME" ] && sed -i "s|DB_DATABASE=.*|DB_DATABASE=$DB_NAME|" .env\n\
 [ ! -z "$DB_HOST" ] && sed -i "s|DB_HOST=.*|DB_HOST=$DB_HOST|" .env\n\
+[ ! -z "$APP_KEY" ] && sed -i "s|APP_KEY=.*|APP_KEY=$APP_KEY|" .env\n\
+\n\
+# Generate APP_KEY if still placeholder\n\
+if grep -q "APP_KEY=base64:your-app-key-here" .env || grep -q "APP_KEY=$" .env; then\n\
+    echo "Generating APP_KEY..."\n\
+    php artisan key:generate --force || true\n\
+fi\n\
 \n\
 # Run migrations\n\
-php artisan migrate --force\n\
+echo "Running migrations..."\n\
+php artisan migrate --force || true\n\
 \n\
-# Start Apache\n\
-apache2-foreground\n\
-' > /docker-entrypoint.sh && chmod +x /docker-entrypoint.sh
-
-# Create entrypoint script that updates .env from docker-compose environment
-RUN echo '#!/bin/bash\n\
-# Update .env from environment variables\n\
-[ ! -z "$DB_PASSWORD" ] && sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=$DB_PASSWORD|" .env\n\
-[ ! -z "$DB_USERNAME" ] && sed -i "s|DB_USERNAME=.*|DB_USERNAME=$DB_USERNAME|" .env\n\
-[ ! -z "$DB_NAME" ] && sed -i "s|DB_DATABASE=.*|DB_DATABASE=$DB_NAME|" .env\n\
-[ ! -z "$DB_HOST" ] && sed -i "s|DB_HOST=.*|DB_HOST=$DB_HOST|" .env\n\
-\n\
-# Run migrations\n\
-php artisan migrate --force\n\
-\n\
-# Start Apache\n\
-apache2-foreground\n\
+echo "Starting Apache..."\n\
+exec apache2-foreground\n\
 ' > /docker-entrypoint.sh && chmod +x /docker-entrypoint.sh
 
 # Set permissions
