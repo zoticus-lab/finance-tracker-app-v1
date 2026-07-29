@@ -29,9 +29,9 @@ function AppLayout({ children }) {
   const [chatOpen, setChatOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col lg:flex-row">
       <BottomNavigationBar onAddClick={() => setShowAddModal(true)} />
-      <main className="flex-1 overflow-y-auto bg-gray-50">
+      <main className="flex-1 min-w-0 bg-gray-50 lg:ml-64 pb-24 lg:pb-8">
         {children}
       </main>
       <AddTransactionModal

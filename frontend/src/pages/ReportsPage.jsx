@@ -1856,8 +1856,8 @@ export default function ReportsPage() {
   if (loading) return <LoadingSpinner />;
 
   return (
-    <div className="pb-24 md:pb-0">
-      <div className="relative overflow-hidden bg-gradient-to-br from-sky-600 via-blue-600 to-indigo-700 text-white p-6 md:rounded-b-2xl">
+    <div className="max-w-7xl mx-auto w-full px-4 py-8 space-y-8 animate-fade-in pb-24 md:pb-8">
+      <div className="relative overflow-hidden bg-gradient-to-br from-indigo-900 via-primary-900 to-violet-950 text-white p-6 md:rounded-2xl shadow-premium border border-slate-800/10">
         <div className="pointer-events-none absolute -right-14 -top-14 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
         <div className="pointer-events-none absolute -left-16 bottom-0 h-36 w-36 rounded-full bg-cyan-300/20 blur-2xl" />
 
@@ -1962,14 +1962,19 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      <div className="p-4 md:p-6 space-y-6">
+      <div className="space-y-6">
         <div className="flex justify-end">
-          <div className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2">
-            <label className="text-xs font-semibold text-gray-600">Periode:</label>
+          <div className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 shadow-sm">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Periode:</label>
             <select
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+              className="bg-transparent text-sm font-bold text-slate-800 focus:outline-none cursor-pointer appearance-none pr-6 bg-no-repeat"
+              style={{
+                backgroundImage: `url("data:image/svg+xml;utf8,<svg fill='none' stroke='%2364748B' stroke-width='2' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'></path></svg>")`,
+                backgroundPosition: 'right center',
+                backgroundSize: '0.8rem'
+              }}
             >
               <option value="all">Semua Periode</option>
               {periodOptions.map((p) => (
@@ -1980,59 +1985,60 @@ export default function ReportsPage() {
         </div>
 
         {/* Summary Cards - Paling Atas */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <div className="card-lg text-center">
-            <p className="text-gray-600 text-sm mb-2">Total Income ({selectedPeriodLabel})</p>
-            <p className="text-2xl font-bold text-green-600">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-premium p-6 text-center hover:shadow-premium-hover hover:-translate-y-0.5 transition-all duration-300">
+            <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">Total Income ({selectedPeriodLabel})</p>
+            <p className="text-2xl font-extrabold text-emerald-600">
               {formatCurrency(totalIncome, 'IDR')}
             </p>
           </div>
-          <div className="card-lg text-center">
-            <p className="text-gray-600 text-sm mb-2">Total Expense ({selectedPeriodLabel})</p>
-            <p className="text-2xl font-bold text-red-600">
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-premium p-6 text-center hover:shadow-premium-hover hover:-translate-y-0.5 transition-all duration-300">
+            <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">Total Expense ({selectedPeriodLabel})</p>
+            <p className="text-2xl font-extrabold text-rose-600">
               {formatCurrency(totalExpense, 'IDR')}
             </p>
           </div>
-          <div className="card-lg text-center">
-            <p className="text-gray-600 text-sm mb-2">Net ({selectedPeriodLabel})</p>
-            <p className={`text-2xl font-bold ${totalIncome - totalExpense >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-premium p-6 text-center hover:shadow-premium-hover hover:-translate-y-0.5 transition-all duration-300">
+            <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">Net ({selectedPeriodLabel})</p>
+            <p className={`text-2xl font-extrabold ${totalIncome - totalExpense >= 0 ? 'text-indigo-600' : 'text-rose-600'}`}>
               {formatCurrency(totalIncome - totalExpense, 'IDR')}
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="card-lg">
-            <p className="text-sm text-gray-500 mb-1">Savings Rate</p>
-            <p className={`text-2xl font-bold ${savingsRate >= 20 ? 'text-green-600' : 'text-amber-600'}`}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-premium p-6 hover:shadow-premium-hover transition-all duration-300 space-y-1">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Savings Rate</p>
+            <p className={`text-2xl font-extrabold ${savingsRate >= 20 ? 'text-emerald-600' : 'text-amber-500'}`}>
               {savingsRate.toFixed(1)}%
             </p>
-            <p className="text-xs text-gray-500 mt-1">Target ideal: minimal 20% dari income.</p>
+            <p className="text-[10px] text-slate-400 font-semibold mt-1">Target ideal: minimal 20% dari total pemasukan.</p>
           </div>
 
-          <div className="card-lg">
-            <p className="text-sm text-gray-500 mb-1">Expense Ratio</p>
-            <p className={`text-2xl font-bold ${livingExpenseRatio <= 80 ? 'text-green-600' : 'text-red-600'}`}>
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-premium p-6 hover:shadow-premium-hover transition-all duration-300 space-y-1">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Expense Ratio</p>
+            <p className={`text-2xl font-extrabold ${livingExpenseRatio <= 80 ? 'text-emerald-600' : 'text-rose-500'}`}>
               {livingExpenseRatio.toFixed(1)}%
             </p>
-            <p className="text-xs text-gray-500 mt-1">Hanya biaya hidup rutin / total income (Piutang Diberikan dikeluarkan).</p>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-[10px] text-slate-400 font-semibold mt-1 leading-normal">
               Living: {formatCurrency(livingExpenseOnly, 'IDR')} | Non-rutin: {formatCurrency(loanExpenseOnly, 'IDR')}
             </p>
           </div>
 
-          <div className="card-lg">
-            <p className="text-sm text-gray-500 mb-1">Rata-rata per Kategori</p>
-            <p className="text-2xl font-bold text-blue-600">
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-premium p-6 hover:shadow-premium-hover transition-all duration-300 space-y-1">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Rata-rata per Kategori</p>
+            <p className="text-2xl font-extrabold text-indigo-600">
               {formatCurrency(averageExpense, 'IDR')}
             </p>
-            <p className="text-xs text-gray-500 mt-1">Rata-rata nominal pengeluaran per kategori pada periode terpilih.</p>
+            <p className="text-[10px] text-slate-400 font-semibold mt-1">Rata-rata nominal pengeluaran per kategori.</p>
           </div>
         </div>
 
-        <div className="card-lg border border-emerald-200 bg-emerald-50/50">
-          <h3 className="text-lg font-bold text-gray-900 mb-2">Safe-to-Spend</h3>
-          <p className="text-xs text-gray-600 mb-3">Simulasi nominal spend sampai awal siklus berikutnya.</p>
+        <div className="bg-emerald-50/30 rounded-2xl border border-emerald-100 shadow-sm p-6 space-y-4">
+          <div>
+            <h3 className="text-lg font-bold text-slate-900">Simulasi Aman Belanja (Safe-to-Spend)</h3>
+            <p className="text-xs text-slate-500 font-semibold mt-0.5">Analisis & perkiraan dana sisa sebelum siklus periode baru dimulai.</p>
+          </div>
           <div className="mb-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">Mau spend berapa?</label>
@@ -2074,8 +2080,8 @@ export default function ReportsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Monthly Income vs Expense */}
           {monthlyData.length > 0 && (
-            <div className="card-lg">
-              <h3 className="font-semibold text-gray-900 mb-4">Income vs Expense</h3>
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-premium p-6 hover:shadow-premium-hover transition-all duration-300">
+              <h3 className="font-bold text-slate-800 text-base mb-4">Income vs Expense</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={monthlyData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
@@ -2107,8 +2113,8 @@ export default function ReportsPage() {
 
           {/* Account Balances */}
           {accountData.length > 0 && (
-            <div className="card-lg">
-              <h3 className="font-semibold text-gray-900 mb-4">Account Balances</h3>
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-premium p-6 hover:shadow-premium-hover transition-all duration-300">
+              <h3 className="font-bold text-slate-800 text-base mb-4">Saldo per Rekening</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={accountData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
@@ -2126,10 +2132,10 @@ export default function ReportsPage() {
 
           {/* Expense by Category */}
           {expenseMonthOptions.length > 0 && (
-            <div className="card-lg md:col-span-2">
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-premium p-6 hover:shadow-premium-hover transition-all duration-300 md:col-span-2">
               <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Expense by Category (Grouped)</h3>
+                  <h3 className="font-bold text-slate-800 text-base mb-1">Pengeluaran per Kategori (Tergrup)</h3>
                   <p className="text-sm text-gray-500">Kategori kecil dikelompokkan ke grup utama agar analisis lebih rapi.</p>
                 </div>
                 <div className="w-full md:w-72">

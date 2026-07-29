@@ -225,13 +225,152 @@ export default function GoalsPage() {
   if (loading) return <LoadingSpinner />;
 
   return (
-    <div className="pb-24 md:pb-0">
-      <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 md:rounded-b-2xl">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">Saving Goals</h1>
-            <p className="text-blue-100 text-sm mt-1">Kelola target tabungan, setor, dan tarik dana dari sini.</p>
+    <div className="max-w-7xl mx-auto w-full px-4 py-8 space-y-8 animate-fade-in pb-24 md:pb-8">
+      {/* Header section */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-5">
+        <div>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Target Tabungan (Goals)</h1>
+          <p className="text-slate-500 font-medium mt-1">Kelola target menabung Anda, setor dana, dan pantau progres pencapaian.</p>
+        </div>
+        <button
+          onClick={() => {
+            setGoalError('');
+            setEditingGoalId(null);
+            setGoalForm({ name: '', target_amount: '', current_amount: '0', image_url: '', description: '', target_date: '' });
+            setShowGoalForm(true);
+          }}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 text-white text-sm font-bold shadow-md shadow-primary-500/10 hover:shadow-lg hover:shadow-primary-500/20 hover:from-primary-700 hover:to-primary-600 transition-all duration-300 active:scale-95 self-start sm:self-auto"
+        >
+          <Plus size={18} />
+          <span>Tambah Target</span>
+        </button>
+      </div>
+
+      {goalError && (
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 text-sm font-semibold animate-slide-up">
+          {goalError}
+        </div>
+      )}
+
+      {/* Grid view of Goals */}
+      {goals.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {goals.map((goal) => {
+            const percentage = goal.target_amount > 0
+              ? (Number(goal.current_amount || 0) / Number(goal.target_amount || 0)) * 100
+              : 0;
+
+            return (
+              <div
+                key={goal.id}
+                className="bg-white rounded-2xl border border-slate-100 shadow-premium p-6 flex flex-col justify-between hover:shadow-premium-hover hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group"
+              >
+                <div className="space-y-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3.5 min-w-0">
+                      {goal.image_url ? (
+                        <img
+                          src={goal.image_url}
+                          alt={goal.name}
+                          className="w-12 h-12 rounded-xl object-cover border border-slate-200 shadow-sm"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-lg">
+                          <Target size={20} />
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <h3 className="text-lg font-bold text-slate-900 truncate group-hover:text-primary-600 transition-colors duration-200">
+                          {goal.name}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="inline-block text-[9px] font-extrabold text-primary-600 bg-primary-50 px-1.5 py-0.5 rounded border border-primary-100/50 uppercase tracking-wider">
+                            {goal.status}
+                          </span>
+                        </div>
+                        {goal.description && (
+                          <p className="text-xs text-slate-400 font-semibold mt-1.5 line-clamp-1">{goal.description}</p>
+                        )}
+                      </div>
+                    </div>
+                    <span className="text-sm font-extrabold text-indigo-600 bg-indigo-50/80 px-2.5 py-1 rounded-xl border border-indigo-100/50 shadow-sm shadow-indigo-500/5">
+                      {percentage.toFixed(0)}%
+                    </span>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="space-y-2 pt-2">
+                    <div className="h-2.5 bg-slate-200/70 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full transition-all duration-500"
+                        style={{ width: `${Math.min(percentage, 100)}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-xs text-slate-500 font-semibold">
+                      <span>Terkumpul: {formatCurrency(goal.current_amount, 'IDR')}</span>
+                      <span>Target: {formatCurrency(goal.target_amount, 'IDR')}</span>
+                    </div>
+                  </div>
+
+                  {/* Period target date */}
+                  {goal.target_date && (
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                      Target Tercapai: {goal.target_date}
+                    </p>
+                  )}
+
+                  {/* Financial operations buttons */}
+                  <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100">
+                    <button
+                      type="button"
+                      onClick={() => openGoalProgressForm(goal, 'deposit')}
+                      className="px-3 py-2 text-xs font-bold rounded-xl border border-emerald-200 text-emerald-600 hover:bg-emerald-50 transition-all duration-200"
+                    >
+                      + Tambah Dana
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => openGoalProgressForm(goal, 'withdraw')}
+                      className="px-3 py-2 text-xs font-bold rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 transition-all duration-200"
+                    >
+                      - Tarik Dana
+                    </button>
+                  </div>
+
+                  {/* Management buttons */}
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => handleEditGoal(goal)}
+                      className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all duration-200"
+                    >
+                      <Edit2 size={13} />
+                      Edit Target
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteGoal(goal.id)}
+                      className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl border border-rose-100 text-rose-500 hover:bg-rose-50/50 transition-all duration-200"
+                    >
+                      <Trash2 size={13} />
+                      Hapus Target
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="bg-white rounded-2xl border border-slate-100 border-dashed p-12 text-center max-w-md mx-auto">
+          <div className="w-16 h-16 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center mx-auto mb-4 text-slate-400">
+            <Target size={28} />
           </div>
+          <h3 className="text-lg font-bold text-slate-900 mb-1">Belum ada Target Tabungan</h3>
+          <p className="text-slate-500 text-sm mb-6">Mulai rencanakan pembelian impian Anda, dana darurat, atau investasi masa depan.</p>
           <button
             onClick={() => {
               setGoalError('');
@@ -239,140 +378,47 @@ export default function GoalsPage() {
               setGoalForm({ name: '', target_amount: '', current_amount: '0', image_url: '', description: '', target_date: '' });
               setShowGoalForm(true);
             }}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white text-blue-600 text-sm font-semibold hover:bg-blue-50 transition-colors"
+            className="btn-primary mx-auto"
           >
             <Plus size={18} />
-            Add Goal
+            <span>Tambah Target</span>
           </button>
         </div>
-      </div>
+      )}
 
-      <div className="p-4 md:p-6 space-y-4">
-        {goalError && (
-          <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">
-            {goalError}
-          </div>
-        )}
-
-        {goals.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {goals.map((goal) => {
-              const percentage = goal.target_amount > 0
-                ? (Number(goal.current_amount || 0) / Number(goal.target_amount || 0)) * 100
-                : 0;
-
-              return (
-                <div key={goal.id} className="card-lg space-y-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3 min-w-0">
-                      {goal.image_url ? (
-                        <img
-                          src={goal.image_url}
-                          alt={goal.name}
-                          className="w-10 h-10 rounded-lg object-cover border border-gray-200"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
-                      ) : (
-                        <div className="p-2 rounded-lg bg-blue-100 text-blue-700">
-                          <Target size={18} />
-                        </div>
-                      )}
-                      <div className="min-w-0">
-                        <h3 className="text-lg font-semibold text-gray-900 truncate">{goal.name}</h3>
-                        <p className="text-xs text-gray-500">Status: {goal.status}</p>
-                        {goal.description && (
-                          <p className="text-xs text-gray-500 mt-0.5 truncate">{goal.description}</p>
-                        )}
-                      </div>
-                    </div>
-                    <span className="text-sm font-semibold text-blue-600">{percentage.toFixed(0)}%</span>
-                  </div>
-
-                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-500" style={{ width: `${Math.min(percentage, 100)}%` }} />
-                  </div>
-
-                  <div className="flex justify-between text-sm text-gray-700">
-                    <span>{formatCurrency(goal.current_amount, 'IDR')}</span>
-                    <span>/ {formatCurrency(goal.target_amount, 'IDR')}</span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => openGoalProgressForm(goal, 'deposit')}
-                      className="px-3 py-2 text-sm rounded-lg border border-green-200 text-green-700 hover:bg-green-50"
-                    >
-                      + Tambah Dana
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => openGoalProgressForm(goal, 'withdraw')}
-                      className="px-3 py-2 text-sm rounded-lg border border-orange-200 text-orange-700 hover:bg-orange-50"
-                    >
-                      - Tarik Dana
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => handleEditGoal(goal)}
-                      className="inline-flex items-center justify-center gap-2 px-3 py-2 text-sm rounded-lg border border-blue-200 text-blue-700 hover:bg-blue-50"
-                    >
-                      <Edit2 size={14} />
-                      Edit Goal
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteGoal(goal.id)}
-                      className="inline-flex items-center justify-center gap-2 px-3 py-2 text-sm rounded-lg border border-red-200 text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 size={14} />
-                      Hapus Goal
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="card-lg text-center py-10 text-gray-500">Belum ada saving goals</div>
-        )}
-      </div>
-
+      {/* Main Goal Form Popup */}
       {showGoalForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end md:items-center md:justify-center">
-          <div className="bg-white w-full md:max-w-lg rounded-t-2xl md:rounded-2xl p-6 max-h-[95vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">{editingGoalId ? 'Edit Saving Goal' : 'Create Saving Goal'}</h2>
+        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white w-full max-w-md rounded-2xl border border-slate-100 shadow-2xl p-6 relative overflow-hidden animate-slide-up">
+            <div className="flex items-center justify-between mb-6 pb-2 border-b border-slate-100">
+              <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
+                {editingGoalId ? 'Edit Target Tabungan' : 'Tambah Target Tabungan'}
+              </h2>
               <button
                 onClick={() => setShowGoalForm(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors"
               >
                 <X size={20} />
               </button>
             </div>
 
             <form onSubmit={handleGoalSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Goal Name</label>
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Nama Target</label>
                 <input
                   type="text"
                   name="name"
                   value={goalForm.name}
                   onChange={handleGoalInputChange}
                   className="input"
-                  placeholder="e.g. Emergency Fund"
+                  placeholder="Contoh: Beli Laptop Baru, Dana Darurat"
                   required
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Target Amount</label>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Target Nominal (IDR)</label>
                   <input
                     type="number"
                     name="target_amount"
@@ -384,8 +430,8 @@ export default function GoalsPage() {
                     required
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Current Amount</label>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Nominal Awal</label>
                   <input
                     type="number"
                     name="current_amount"
@@ -398,24 +444,24 @@ export default function GoalsPage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Gambar Barang (URL, Optional)</label>
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Gambar Target (Optional)</label>
                 <input
                   type="file"
                   accept="image/*"
                   onChange={handleImageUpload}
-                  className="input"
+                  className="input border-dashed bg-slate-50 cursor-pointer text-xs"
                   disabled={goalImageUploading}
                 />
                 {goalImageUploading && (
-                  <p className="text-xs text-blue-600">Uploading image...</p>
+                  <p className="text-xs text-primary-600 font-bold animate-pulse mt-1">Mengunggah gambar...</p>
                 )}
                 {goalForm.image_url && (
-                  <div className="mt-2 flex items-center gap-3">
+                  <div className="mt-2.5 flex items-center gap-3 bg-slate-50 p-2 border border-slate-100 rounded-xl">
                     <img
                       src={goalForm.image_url}
                       alt="Preview"
-                      className="w-14 h-14 rounded-lg object-cover border border-gray-200"
+                      className="w-12 h-12 rounded-lg object-cover border border-slate-200 shadow-sm"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
                       }}
@@ -423,7 +469,7 @@ export default function GoalsPage() {
                     <button
                       type="button"
                       onClick={() => setGoalForm((prev) => ({ ...prev, image_url: '' }))}
-                      className="text-xs px-2 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-50"
+                      className="text-xs px-2.5 py-1.5 rounded-lg border border-rose-100 text-rose-500 hover:bg-rose-50 transition-colors font-bold"
                     >
                       Hapus Gambar
                     </button>
@@ -431,19 +477,19 @@ export default function GoalsPage() {
                 )}
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Deskripsi (misal: mau beli di mana)</label>
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Deskripsi</label>
                 <textarea
                   name="description"
                   value={goalForm.description}
                   onChange={handleGoalInputChange}
                   className="input min-h-20 resize-none"
-                  placeholder="Contoh: Toko A, marketplace B, atau catatan spesifikasi"
+                  placeholder="Contoh: Spesifikasi barang, merk, atau link toko pembelian"
                 />
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Target Date (Optional)</label>
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Target Tanggal (Optional)</label>
                 <input
                   type="date"
                   name="target_date"
@@ -453,20 +499,20 @@ export default function GoalsPage() {
                 />
               </div>
 
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-3 pt-4 border-t border-slate-100 mt-6">
                 <button
                   type="button"
                   onClick={() => setShowGoalForm(false)}
                   className="btn-secondary flex-1"
                 >
-                  Cancel
+                  Batal
                 </button>
                 <button
                   type="submit"
                   disabled={goalSubmitting}
                   className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {goalSubmitting ? 'Saving...' : editingGoalId ? 'Update Goal' : 'Save Goal'}
+                  {goalSubmitting ? 'Menyimpan...' : editingGoalId ? 'Simpan' : 'Tambah'}
                 </button>
               </div>
             </form>
@@ -474,43 +520,49 @@ export default function GoalsPage() {
         </div>
       )}
 
+      {/* Progress Adjustment (Deposit/Withdraw) Form Popup */}
       {showGoalProgressForm && selectedGoal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end md:items-center md:justify-center">
-          <div className="bg-white w-full md:max-w-md rounded-t-2xl md:rounded-2xl p-6 max-h-[95vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900">
-                {goalProgressMode === 'deposit' ? 'Tambah Dana Goal' : 'Tarik Dana Goal'}
+        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white w-full max-w-md rounded-2xl border border-slate-100 shadow-2xl p-6 relative overflow-hidden animate-slide-up">
+            <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+              <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
+                {goalProgressMode === 'deposit' ? 'Tambah Dana Target' : 'Tarik Dana Target'}
               </h2>
               <button
                 onClick={() => setShowGoalProgressForm(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors"
               >
                 <X size={20} />
               </button>
             </div>
 
-            <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700">
-              <p className="font-semibold text-gray-900">{selectedGoal.name}</p>
-              <p>Saat ini: {formatCurrency(selectedGoal.current_amount, 'IDR')}</p>
-              <p>Target: {formatCurrency(selectedGoal.target_amount, 'IDR')}</p>
+            <div className="mb-4 p-4 bg-slate-50 border border-slate-100 rounded-xl text-xs space-y-1.5 text-slate-600">
+              <p className="font-bold text-slate-900 text-sm mb-1">{selectedGoal.name}</p>
+              <p>Saldo Dana Saat Ini: <span className="font-bold text-slate-900">{formatCurrency(selectedGoal.current_amount, 'IDR')}</span></p>
+              <p>Target Tabungan: <span className="font-bold text-indigo-600">{formatCurrency(selectedGoal.target_amount, 'IDR')}</span></p>
             </div>
 
             {goalProgressError && (
-              <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">
+              <div className="mb-4 p-4 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 text-xs font-semibold">
                 {goalProgressError}
               </div>
             )}
 
             <form onSubmit={handleGoalProgressSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Akun</label>
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Sumber / Rekening Tujuan</label>
                 <select
                   value={goalProgressAccountId}
                   onChange={(e) => setGoalProgressAccountId(e.target.value)}
-                  className="input"
+                  className="input appearance-none bg-no-repeat"
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml;utf8,<svg fill='none' stroke='%2364748B' stroke-width='2' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'></path></svg>")`,
+                    backgroundPosition: 'right 1rem center',
+                    backgroundSize: '1rem'
+                  }}
                   required
                 >
-                  <option value="">Pilih akun</option>
+                  <option value="">Pilih rekening</option>
                   {accounts.map((account) => (
                     <option key={getAccountId(account)} value={String(getAccountId(account))}>
                       {getAccountName(account)} ({formatCurrency(account.balance || 0, 'IDR')})
@@ -519,8 +571,8 @@ export default function GoalsPage() {
                 </select>
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Nominal</label>
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Nominal (IDR)</label>
                 <input
                   type="number"
                   min="0.01"
@@ -533,13 +585,13 @@ export default function GoalsPage() {
                 />
               </div>
 
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-3 pt-4 border-t border-slate-100 mt-6">
                 <button
                   type="button"
                   onClick={() => setShowGoalProgressForm(false)}
                   className="btn-secondary flex-1"
                 >
-                  Cancel
+                  Batal
                 </button>
                 <button
                   type="submit"

@@ -193,6 +193,7 @@ if (!file_exists($sqlFile)) {
     
     $alternatives = [
         __DIR__ . '/database_export.sql',
+        __DIR__ . '/database_schema.sql',
         __DIR__ . '/backend/database_export_updated.sql',
     ];
     

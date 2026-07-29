@@ -95,28 +95,41 @@ export default function MonthlyExportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 md:p-8">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <BarChart3 className="w-8 h-8 text-indigo-600" />
-            <h1 className="text-4xl font-bold text-gray-800">Monthly Report Export</h1>
-          </div>
-          <p className="text-gray-600">Export your financial data by month in multiple formats</p>
+    <div className="max-w-7xl mx-auto w-full px-4 py-8 space-y-8 animate-fade-in pb-24 md:pb-8">
+      {/* Header section */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-5">
+        <div>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Ekspor Laporan Bulanan</h1>
+          <p className="text-slate-500 font-medium mt-1">Unduh ringkasan data keuangan Anda per bulan dalam berbagai format dokumen.</p>
         </div>
+      </div>
 
-        {/* Month & Year Selector */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Select Period</h2>
+      <div className="space-y-6">
+        {error && (
+          <div className="p-4 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 text-sm font-semibold animate-slide-up">
+            {error}
+          </div>
+        )}
+
+        {/* Period Selector Card */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-premium p-6 space-y-4">
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">Pilih Periode</h2>
+            <p className="text-xs text-slate-400 font-semibold mt-0.5">Tentukan tahun dan bulan data keuangan yang ingin diekspor.</p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Year Selector */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Year</label>
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Tahun</label>
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="input appearance-none bg-no-repeat"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml;utf8,<svg fill='none' stroke='%2364748B' stroke-width='2' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'></path></svg>")`,
+                  backgroundPosition: 'right 1rem center',
+                  backgroundSize: '1rem'
+                }}
               >
                 {years.map(year => (
                   <option key={year} value={year}>{year}</option>
@@ -124,13 +137,17 @@ export default function MonthlyExportPage() {
               </select>
             </div>
 
-            {/* Month Selector */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Month</label>
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Bulan</label>
               <select
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="input appearance-none bg-no-repeat"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml;utf8,<svg fill='none' stroke='%2364748B' stroke-width='2' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'></path></svg>")`,
+                  backgroundPosition: 'right 1rem center',
+                  backgroundSize: '1rem'
+                }}
               >
                 {months.map((month, index) => (
                   <option key={index + 1} value={index + 1}>{month}</option>
@@ -140,113 +157,110 @@ export default function MonthlyExportPage() {
           </div>
         </div>
 
-        {/* Summary Card */}
+        {/* Summary Card Section */}
         {loading ? (
           <div className="flex justify-center py-12">
             <LoadingSpinner />
           </div>
-        ) : error ? (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <p className="text-red-700">{error}</p>
-          </div>
         ) : summary ? (
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              Summary - {months[selectedMonth - 1]} {selectedYear}
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-premium p-6 space-y-4">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">
+                Ringkasan Laporan - {months[selectedMonth - 1]} {selectedYear}
+              </h2>
+              <p className="text-xs text-slate-400 font-semibold mt-0.5">Statistik kilas balik performa keuangan Anda bulan ini.</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Total Income */}
-              <div className="bg-green-50 rounded-lg p-4 border-l-4 border-green-500">
-                <p className="text-sm text-gray-600 font-medium">Total Income</p>
-                <p className="text-2xl font-bold text-green-600 mt-1">
-                  {formatCurrency(summary.total_income)}
+              <div className="bg-emerald-50/50 rounded-2xl p-4 border border-emerald-100 flex flex-col justify-between">
+                <span className="text-slate-500 font-bold text-[10px] uppercase tracking-wider">Total Pemasukan</span>
+                <p className="text-lg font-extrabold text-emerald-600 mt-2 truncate">
+                  {formatCurrency(summary.total_income, 'IDR')}
                 </p>
               </div>
 
               {/* Total Expense */}
-              <div className="bg-red-50 rounded-lg p-4 border-l-4 border-red-500">
-                <p className="text-sm text-gray-600 font-medium">Total Expense</p>
-                <p className="text-2xl font-bold text-red-600 mt-1">
-                  {formatCurrency(summary.total_expense)}
+              <div className="bg-rose-50/50 rounded-2xl p-4 border border-rose-100 flex flex-col justify-between">
+                <span className="text-slate-500 font-bold text-[10px] uppercase tracking-wider">Total Pengeluaran</span>
+                <p className="text-lg font-extrabold text-rose-600 mt-2 truncate">
+                  {formatCurrency(summary.total_expense, 'IDR')}
                 </p>
               </div>
 
               {/* Net */}
-              <div className={`rounded-lg p-4 border-l-4 ${
+              <div className={`rounded-2xl p-4 border flex flex-col justify-between ${
                 summary.net >= 0 
-                  ? 'bg-blue-50 border-blue-500' 
-                  : 'bg-orange-50 border-orange-500'
+                  ? 'bg-indigo-50/50 border-indigo-100' 
+                  : 'bg-amber-50/50 border-amber-100'
               }`}>
-                <p className="text-sm text-gray-600 font-medium">Net Flow</p>
-                <p className={`text-2xl font-bold mt-1 ${
-                  summary.net >= 0 ? 'text-blue-600' : 'text-orange-600'
+                <span className="text-slate-500 font-bold text-[10px] uppercase tracking-wider">Arus Kas Bersih (Net)</span>
+                <p className={`text-lg font-extrabold mt-2 truncate ${
+                  summary.net >= 0 ? 'text-indigo-600' : 'text-amber-600'
                 }`}>
-                  {formatCurrency(summary.net)}
+                  {formatCurrency(summary.net, 'IDR')}
                 </p>
               </div>
 
               {/* Transaction Count */}
-              <div className="bg-purple-50 rounded-lg p-4 border-l-4 border-purple-500">
-                <p className="text-sm text-gray-600 font-medium">Transactions</p>
-                <p className="text-2xl font-bold text-purple-600 mt-1">
-                  {summary.transaction_count}
+              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex flex-col justify-between">
+                <span className="text-slate-500 font-bold text-[10px] uppercase tracking-wider">Jumlah Transaksi</span>
+                <p className="text-lg font-extrabold text-slate-800 mt-2">
+                  {summary.transaction_count} kali
                 </p>
               </div>
             </div>
           </div>
         ) : null}
 
-        {/* Export Options */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Export Format</h2>
-          <p className="text-gray-600 text-sm mb-6">
-            Choose your preferred format to download the monthly financial report
-          </p>
+        {/* Export Formats Card */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-premium p-6 space-y-6">
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">Format Unduhan</h2>
+            <p className="text-xs text-slate-400 font-semibold mt-0.5">Pilih salah satu format dokumen di bawah ini untuk memulai unduhan.</p>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* PDF Export */}
             <button
               onClick={() => handleExport('pdf')}
-              className="flex items-center justify-center gap-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-4 px-6 rounded-lg transition-all transform hover:scale-105 active:scale-95"
+              className="inline-flex items-center justify-center gap-2.5 px-4 py-3.5 rounded-xl bg-gradient-to-r from-rose-600 to-rose-500 text-white text-sm font-bold shadow-md shadow-rose-500/10 hover:shadow-lg hover:shadow-rose-500/20 hover:from-rose-700 hover:to-rose-600 transition-all duration-300 active:scale-95"
             >
               <FileText className="w-5 h-5" />
-              <span>Export as PDF</span>
-              <Download className="w-4 h-4 ml-2" />
+              <span>Ekspor PDF</span>
+              <Download className="w-4 h-4" />
             </button>
 
-            {/* CSV Export (CLI Style) */}
+            {/* CSV Export */}
             <button
               onClick={() => handleExport('csv')}
-              className="flex items-center justify-center gap-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-4 px-6 rounded-lg transition-all transform hover:scale-105 active:scale-95"
+              className="inline-flex items-center justify-center gap-2.5 px-4 py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white text-sm font-bold shadow-md shadow-emerald-500/10 hover:shadow-lg hover:shadow-emerald-500/20 hover:from-emerald-700 hover:to-emerald-600 transition-all duration-300 active:scale-95"
             >
               <FileText className="w-5 h-5" />
-              <span>Export as CSV</span>
-              <Download className="w-4 h-4 ml-2" />
+              <span>Ekspor CSV (Excel)</span>
+              <Download className="w-4 h-4" />
             </button>
 
             {/* JSON Export */}
             <button
               onClick={() => handleExport('json')}
-              className="flex items-center justify-center gap-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-4 px-6 rounded-lg transition-all transform hover:scale-105 active:scale-95"
+              className="inline-flex items-center justify-center gap-2.5 px-4 py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 text-white text-sm font-bold shadow-md shadow-indigo-500/10 hover:shadow-lg hover:shadow-indigo-500/20 hover:from-indigo-700 hover:to-indigo-600 transition-all duration-300 active:scale-95"
             >
               <FileText className="w-5 h-5" />
-              <span>Export as JSON</span>
-              <Download className="w-4 h-4 ml-2" />
+              <span>Ekspor JSON (Raw)</span>
+              <Download className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Info Box */}
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-blue-800 text-sm">
-            <strong>📝 About the exports:</strong>
-            <br />
-            • <strong>PDF:</strong> Professional-looking formatted report with charts and summary
-            <br />
-            • <strong>CSV:</strong> CLI-style plain text format (spreadsheet compatible)
-            <br />
-            • <strong>JSON:</strong> Raw structured data format for integration
-          </p>
+        {/* Info Callout */}
+        <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-5 space-y-2">
+          <p className="text-xs font-bold uppercase tracking-wider text-indigo-700">Informasi Format Dokumen</p>
+          <div className="text-xs text-indigo-600/90 font-medium space-y-1.5">
+            <p>• <strong>PDF:</strong> Laporan rapi terformat, siap dicetak atau dikirimkan ke pihak eksternal.</p>
+            <p>• <strong>CSV:</strong> Data tabular mentah, cocok dibuka di Microsoft Excel atau Google Sheets.</p>
+            <p>• <strong>JSON:</strong> Data berstruktur pemrograman, biasanya digunakan untuk diintegrasikan dengan aplikasi lain.</p>
+          </div>
         </div>
       </div>
     </div>

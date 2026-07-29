@@ -11,8 +11,8 @@
 -- Script akan otomatis membuat database jika belum ada
 -- ============================================================
 
-CREATE DATABASE IF NOT EXISTS `personal_finance` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `personal_finance`;
+CREATE DATABASE IF NOT EXISTS `personal_finance_tracker` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `personal_finance_tracker`;
 
 -- ============================================================
 -- 1. USERS TABLE

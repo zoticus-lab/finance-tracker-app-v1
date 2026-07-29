@@ -145,129 +145,176 @@ export default function BudgetsPage() {
   if (loading) return <LoadingSpinner />;
 
   return (
-    <div className="pb-24 md:pb-0">
-      <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 md:rounded-b-2xl">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Budgets</h1>
-          <button
-            onClick={handleAddClick}
-            className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-all"
-          >
-            <Plus size={24} />
-          </button>
+    <div className="max-w-7xl mx-auto w-full px-4 py-8 space-y-8 animate-fade-in pb-24 md:pb-8">
+      {/* Header section */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-5">
+        <div>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Daftar Anggaran</h1>
+          <p className="text-slate-500 font-medium mt-1">Kelola dan pantau batas pengeluaran untuk setiap kategori pengeluaran Anda.</p>
         </div>
+        <button
+          onClick={handleAddClick}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 text-white text-sm font-bold shadow-md shadow-primary-500/10 hover:shadow-lg hover:shadow-primary-500/20 hover:from-primary-700 hover:to-primary-600 transition-all duration-300 active:scale-95 self-start sm:self-auto"
+        >
+          <Plus size={18} />
+          <span>Tambah Anggaran</span>
+        </button>
       </div>
 
-      <div className="p-4 md:p-6 space-y-4">
-        {error && (
-          <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">
-            {error}
-          </div>
-        )}
+      {error && (
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 text-sm font-semibold animate-slide-up">
+          {error}
+        </div>
+      )}
 
-        {budgets.length > 0 ? (
-          budgets.map((budget) => {
+      {/* Grid view of Budgets */}
+      {budgets.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {budgets.map((budget) => {
             const percentage = (budget.spent_amount / budget.limit_amount) * 100;
-            const colors = getStatusColor(budget.spent_amount, budget.limit_amount);
-            const status = getStatusLabel(budget.spent_amount, budget.limit_amount);
+            const isExceeded = percentage >= 100;
+            const isWarning = percentage >= 80 && percentage < 100;
+            const statusLabel = isExceeded ? 'Melebihi Batas' : isWarning ? 'Peringatan' : 'Aman';
 
             return (
-              <div key={budget.id} className="card-lg space-y-4">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {budget.category?.name}
-                    </h3>
-                    <p className={`text-sm ${colors.text} font-medium`}>{status}</p>
+              <div
+                key={budget.id}
+                className="bg-white rounded-2xl border border-slate-100 shadow-premium p-6 flex flex-col justify-between hover:shadow-premium-hover hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group"
+              >
+                <div className="space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900 group-hover:text-primary-600 transition-colors duration-200">
+                        {budget.category?.name}
+                      </h3>
+                      <span
+                        className={`inline-block text-[10px] font-extrabold px-2 py-0.5 rounded border mt-1.5 uppercase tracking-wider ${
+                          isExceeded
+                            ? 'bg-rose-50 text-rose-600 border-rose-100'
+                            : isWarning
+                            ? 'bg-amber-50 text-amber-600 border-amber-100'
+                            : 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                        }`}
+                      >
+                        {statusLabel}
+                      </span>
+                    </div>
+                    
+                    {/* Action buttons */}
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleEditClick(budget)}
+                        className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all duration-200"
+                        title="Edit anggaran"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(budget.id)}
+                        className="p-2 text-slate-400 hover:text-danger-600 hover:bg-danger-50 rounded-xl transition-all duration-200"
+                        title="Hapus anggaran"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleEditClick(budget)}
-                      className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
-                    >
-                      <Edit2 size={18} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(budget.id)}
-                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                </div>
 
-                {/* Progress Bar */}
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>{formatCurrency(budget.spent_amount, 'IDR')}</span>
-                    <span>{formatCurrency(budget.limit_amount, 'IDR')}</span>
+                  {/* Progress Bar */}
+                  <div className="space-y-2.5 pt-2">
+                    <div className="h-2.5 bg-slate-200/70 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          isExceeded
+                            ? 'bg-gradient-to-r from-rose-500 to-rose-600'
+                            : isWarning
+                            ? 'bg-gradient-to-r from-amber-500 to-amber-600'
+                            : 'bg-gradient-to-r from-emerald-500 to-emerald-600'
+                        }`}
+                        style={{ width: `${Math.min(percentage, 100)}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-xs text-slate-500 font-bold">
+                      <span>{percentage.toFixed(0)}% Terpakai</span>
+                      <span>{percentage >= 100 ? 'Over' : `${(100 - percentage).toFixed(0)}% Sisa`}</span>
+                    </div>
                   </div>
-                  <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full ${colors.bg} transition-all`}
-                      style={{ width: `${Math.min(percentage, 100)}%` }}
-                    />
+
+                  <div className="flex justify-between text-xs text-slate-500 font-semibold border-t border-slate-100 pt-3 mt-1">
+                    <span>Terpakai: {formatCurrency(budget.spent_amount, 'IDR')}</span>
+                    <span>Batas: {formatCurrency(budget.limit_amount, 'IDR')}</span>
                   </div>
-                  <p className="text-xs text-gray-500 text-right">{percentage.toFixed(1)}% used</p>
                 </div>
 
                 {/* Period Info */}
-                <p className="text-xs text-gray-500">
-                  {budget.period_start} to {budget.period_end}
-                </p>
+                <div className="mt-4 pt-2 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                  Periode: {budget.period_start} s/d {budget.period_end}
+                </div>
               </div>
             );
-          })
-        ) : (
-          <div className="card-lg text-center py-12">
-            <p className="text-gray-500 mb-4">No budgets yet</p>
-            <button onClick={handleAddClick} className="btn-primary">
-              <Plus size={18} className="inline mr-2" />
-              Create Budget
-            </button>
+          })}
+        </div>
+      ) : (
+        <div className="bg-white rounded-2xl border border-slate-100 border-dashed p-12 text-center max-w-md mx-auto">
+          <div className="w-16 h-16 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center mx-auto mb-4 text-slate-400">
+            <TrendingUp size={28} />
           </div>
-        )}
-      </div>
+          <h3 className="text-lg font-bold text-slate-900 mb-1">Belum ada Anggaran</h3>
+          <p className="text-slate-500 text-sm mb-6">Tambahkan batas pengeluaran bulanan untuk kategori pengeluaran Anda agar keuangan Anda lebih terkendali.</p>
+          <button onClick={handleAddClick} className="btn-primary mx-auto">
+            <Plus size={18} />
+            <span>Tambah Anggaran</span>
+          </button>
+        </div>
+      )}
 
+      {/* Popup Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end md:items-center md:justify-center">
-          <div className="bg-white w-full md:max-w-lg rounded-t-2xl md:rounded-2xl p-6 max-h-[95vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">{editingId ? 'Edit Budget' : 'Create Budget'}</h2>
+        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white w-full max-w-md rounded-2xl border border-slate-100 shadow-2xl p-6 relative overflow-hidden animate-slide-up">
+            <div className="flex items-center justify-between mb-6 pb-2 border-b border-slate-100">
+              <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
+                {editingId ? 'Edit Anggaran' : 'Tambah Anggaran'}
+              </h2>
               <button
                 onClick={() => {
                   setShowForm(false);
                   resetForm();
                 }}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors"
               >
                 <X size={20} />
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Budget Name</label>
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Nama Anggaran</label>
                 <input
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
                   className="input"
-                  placeholder="e.g. Monthly Food"
+                  placeholder="Contoh: Bulanan Makanan, Hiburan, Belanja"
+                  required
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Category</label>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Kategori</label>
                   <select
                     name="category_id"
                     value={formData.category_id}
                     onChange={handleInputChange}
-                    className="input"
+                    className="input appearance-none bg-no-repeat"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml;utf8,<svg fill='none' stroke='%2364748B' stroke-width='2' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'></path></svg>")`,
+                      backgroundPosition: 'right 1rem center',
+                      backgroundSize: '1rem'
+                    }}
                   >
-                    <option value="">No category</option>
+                    <option value="">Tanpa Kategori</option>
                     {categories.map((cat) => (
                       <option key={cat.id} value={cat.id}>
                         {cat.name}
@@ -276,24 +323,29 @@ export default function BudgetsPage() {
                   </select>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Period Type</label>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Periode</label>
                   <select
                     name="period_type"
                     value={formData.period_type}
                     onChange={handleInputChange}
-                    className="input"
+                    className="input appearance-none bg-no-repeat"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml;utf8,<svg fill='none' stroke='%2364748B' stroke-width='2' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'></path></svg>")`,
+                      backgroundPosition: 'right 1rem center',
+                      backgroundSize: '1rem'
+                    }}
                   >
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                    <option value="yearly">Yearly</option>
+                    <option value="daily">Harian</option>
+                    <option value="weekly">Mingguan</option>
+                    <option value="monthly">Bulanan</option>
+                    <option value="yearly">Tahunan</option>
                   </select>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Budget Limit</label>
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Batas Anggaran (IDR)</label>
                 <input
                   type="number"
                   name="limit_amount"
@@ -306,9 +358,9 @@ export default function BudgetsPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Start Date</label>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Tanggal Mulai</label>
                   <input
                     type="date"
                     name="period_start"
@@ -318,8 +370,8 @@ export default function BudgetsPage() {
                     required
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">End Date</label>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Tanggal Selesai</label>
                   <input
                     type="date"
                     name="period_end"
@@ -331,7 +383,7 @@ export default function BudgetsPage() {
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-3 pt-4 border-t border-slate-100 mt-6">
                 <button
                   type="button"
                   onClick={() => {
@@ -340,14 +392,14 @@ export default function BudgetsPage() {
                   }}
                   className="btn-secondary flex-1"
                 >
-                  Cancel
+                  Batal
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
                   className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {submitting ? 'Saving...' : editingId ? 'Update' : 'Create'}
+                  {submitting ? 'Menyimpan...' : editingId ? 'Simpan' : 'Tambah'}
                 </button>
               </div>
             </form>

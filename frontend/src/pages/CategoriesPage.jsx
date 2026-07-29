@@ -156,173 +156,210 @@ export default function CategoriesPage() {
   if (loading) return <LoadingSpinner />;
 
   return (
-    <div className="pb-24 md:pb-0">
-      <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 md:rounded-b-2xl">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Categories</h1>
+    <div className="max-w-7xl mx-auto w-full px-4 py-8 space-y-8 animate-fade-in pb-24 md:pb-8">
+      {/* Header section */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-5">
+        <div>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Kategori Transaksi</h1>
+          <p className="text-slate-500 font-medium mt-1">Atur kategori pemasukan dan pengeluaran Anda beserta subkategorinya.</p>
+        </div>
+        <button
+          onClick={() => {
+            resetForm();
+            setShowForm(true);
+          }}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 text-white text-sm font-bold shadow-md shadow-primary-500/10 hover:shadow-lg hover:shadow-primary-500/20 hover:from-primary-700 hover:to-primary-600 transition-all duration-300 active:scale-95 self-start sm:self-auto"
+        >
+          <Plus size={18} />
+          <span>Tambah Kategori</span>
+        </button>
+      </div>
+
+      {error && (
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 text-sm font-semibold animate-slide-up">
+          {error}
+        </div>
+      )}
+
+      {categories.length > 0 ? (
+        <div className="space-y-12">
+          {[
+            {
+              label: 'Kategori Pengeluaran (Expense)',
+              groups: expenseGroups,
+              badgeClass: 'bg-rose-50 text-rose-600 border border-rose-100',
+              iconText: '📤'
+            },
+            {
+              label: 'Kategori Pemasukan (Income)',
+              groups: incomeGroups,
+              badgeClass: 'bg-emerald-50 text-emerald-600 border border-emerald-100',
+              iconText: '📥'
+            },
+          ].map((section) => (
+            <div key={section.label} className="space-y-4">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">{section.iconText}</span>
+                <h2 className="text-xl font-bold text-slate-800 tracking-tight">{section.label}</h2>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {section.groups.map(({ parent, children }) => {
+                  const IconComponent = getCategoryIcon(parent.icon);
+                  const parentId = getCategoryId(parent);
+                  const isVirtualParent = parentId === 'orphan';
+
+                  return (
+                    <div
+                      key={`${section.label}-${parentId}`}
+                      className="bg-white rounded-2xl border border-slate-100 shadow-premium p-6 flex flex-col justify-between hover:shadow-premium-hover hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group"
+                    >
+                      <div
+                        className="absolute inset-0 opacity-5 transition-opacity group-hover:opacity-10 pointer-events-none"
+                        style={{ backgroundColor: parent.color_code || '#95a5a6' }}
+                      />
+
+                      <div className="relative w-full space-y-4">
+                        <div className="flex items-start justify-between">
+                          <div
+                            className="w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-md shadow-slate-500/10"
+                            style={{
+                              backgroundColor: parent.color_code || '#95a5a6',
+                            }}
+                          >
+                            <IconComponent size={22} />
+                          </div>
+
+                          <div className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-wider ${section.badgeClass}`}>
+                            Utama
+                          </div>
+                        </div>
+
+                        <div>
+                          <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            {parent.name}
+                            {parent.is_system_default && (
+                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-50 border border-indigo-100 text-indigo-600 font-extrabold uppercase tracking-wide">
+                                Bawaan
+                              </span>
+                            )}
+                          </h3>
+                          {!isVirtualParent && (
+                            <p className="text-xs text-slate-400 font-semibold mt-0.5">{children.length} subkategori</p>
+                          )}
+                        </div>
+
+                        {children.length > 0 && (
+                          <div className="p-3 bg-slate-50 rounded-xl border border-slate-100/50 space-y-2">
+                            {children.map((child) => (
+                              <div key={getCategoryId(child)} className="flex items-center justify-between gap-3 py-0.5">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <span
+                                    className="w-2 h-2 rounded-full flex-shrink-0 shadow-sm"
+                                    style={{ backgroundColor: child.color_code || '#9ca3af' }}
+                                  />
+                                  <span className="text-sm text-slate-600 font-semibold truncate">{child.name}</span>
+                                </div>
+
+                                {!child.is_system_default && (
+                                  <div className="flex items-center gap-1">
+                                    <button
+                                      onClick={() => handleEdit(child)}
+                                      className="p-1 text-slate-400 hover:text-indigo-600 hover:bg-white border border-transparent hover:border-indigo-100 rounded-lg transition-all shadow-sm shadow-transparent hover:shadow-indigo-500/5"
+                                    >
+                                      <Edit2 size={12} />
+                                    </button>
+                                    <button
+                                      onClick={() => handleDelete(getCategoryId(child))}
+                                      className="p-1 text-slate-400 hover:text-rose-500 hover:bg-white border border-transparent hover:border-rose-100 rounded-lg transition-all shadow-sm shadow-transparent hover:shadow-rose-500/5"
+                                    >
+                                      <Trash2 size={12} />
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {!isVirtualParent && !parent.is_system_default && (
+                          <div className="flex gap-2 pt-3 border-t border-slate-100">
+                            <button
+                              onClick={() => handleEdit(parent)}
+                              className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all duration-200"
+                            >
+                              <Edit2 size={13} />
+                              <span>Edit</span>
+                            </button>
+                            <button
+                              onClick={() => handleDelete(getCategoryId(parent))}
+                              className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl border border-rose-100 text-rose-500 hover:bg-rose-50/50 transition-all duration-200"
+                            >
+                              <Trash2 size={13} />
+                              <span>Hapus</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="bg-white rounded-2xl border border-slate-100 border-dashed p-12 text-center max-w-md mx-auto">
+          <div className="w-16 h-16 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center mx-auto mb-4 text-slate-400">
+            <Tag size={28} />
+          </div>
+          <h3 className="text-lg font-bold text-slate-900 mb-1">Belum ada Kategori</h3>
+          <p className="text-slate-500 text-sm mb-6">Atur kategori pemasukan atau pengeluaran untuk mempermudah pencatatan anggaran.</p>
           <button
             onClick={() => {
               resetForm();
               setShowForm(true);
             }}
-            className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-all"
+            className="btn-primary mx-auto"
           >
-            <Plus size={24} />
+            <Plus size={18} />
+            <span>Tambah Kategori</span>
           </button>
         </div>
-      </div>
+      )}
 
-      <div className="p-4 md:p-6 space-y-4">
-        {error && (
-          <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">
-            {error}
-          </div>
-        )}
-
-        {categories.length > 0 ? (
-          <div className="space-y-8">
-            {[
-              { label: '📤 Expense Categories', groups: expenseGroups, badgeClass: 'bg-red-100 text-red-700' },
-              { label: '📥 Income Categories', groups: incomeGroups, badgeClass: 'bg-green-100 text-green-700' },
-            ].map((section) => (
-              <div key={section.label}>
-                <h2 className="text-base font-semibold text-gray-800 mb-3">{section.label}</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {section.groups.map(({ parent, children }) => {
-                    const IconComponent = getCategoryIcon(parent.icon);
-                    const parentId = getCategoryId(parent);
-                    const isVirtualParent = parentId === 'orphan';
-
-                    return (
-                      <div
-                        key={`${section.label}-${parentId}`}
-                        className="card-lg relative overflow-hidden group hover:shadow-md transition-shadow"
-                      >
-                        <div
-                          className="absolute inset-0 opacity-5"
-                          style={{ backgroundColor: parent.color_code || '#95a5a6' }}
-                        />
-
-                        <div className="relative">
-                          <div className="flex items-start justify-between mb-3">
-                            <div
-                              className="p-3 rounded-lg flex items-center justify-center"
-                              style={{
-                                backgroundColor: parent.color_code || '#95a5a6',
-                                color: 'white',
-                              }}
-                            >
-                              <IconComponent size={24} />
-                            </div>
-
-                            <div className={`px-3 py-1 rounded-full text-xs font-semibold ${section.badgeClass}`}>
-                              Parent
-                            </div>
-                          </div>
-
-                          <div className="mb-3">
-                            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                              {parent.name}
-                              {parent.is_system_default && (
-                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-semibold uppercase tracking-wide">
-                                  Template
-                                </span>
-                              )}
-                            </h3>
-                            {!isVirtualParent && (
-                              <p className="text-xs text-gray-500 mt-1">{children.length} subkategori</p>
-                            )}
-                          </div>
-
-                          {children.length > 0 && (
-                            <div className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-100 space-y-2">
-                              {children.map((child) => (
-                                <div key={getCategoryId(child)} className="flex items-center justify-between gap-3">
-                                  <div className="flex items-center gap-2 min-w-0">
-                                    <span
-                                      className="w-2 h-2 rounded-full flex-shrink-0"
-                                      style={{ backgroundColor: child.color_code || '#9ca3af' }}
-                                    />
-                                    <span className="text-sm text-gray-700 truncate">{child.name}</span>
-                                  </div>
-
-                                  {!child.is_system_default && (
-                                    <div className="flex items-center gap-1">
-                                      <button
-                                        onClick={() => handleEdit(child)}
-                                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"
-                                      >
-                                        <Edit2 size={14} />
-                                      </button>
-                                      <button
-                                        onClick={() => handleDelete(getCategoryId(child))}
-                                        className="p-1.5 text-red-600 hover:bg-red-50 rounded"
-                                      >
-                                        <Trash2 size={14} />
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-
-                          {!isVirtualParent && !parent.is_system_default && (
-                            <div className="flex gap-2 pt-3 border-t border-gray-100">
-                              <button
-                                onClick={() => handleEdit(parent)}
-                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm font-medium"
-                              >
-                                <Edit2 size={16} />
-                                <span>Edit</span>
-                              </button>
-                              <button
-                                onClick={() => handleDelete(getCategoryId(parent))}
-                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-sm font-medium"
-                              >
-                                <Trash2 size={16} />
-                                <span>Delete</span>
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="card-lg text-center py-10 text-gray-500">No categories yet</div>
-        )}
-      </div>
-
+      {/* Categories Form Popup Overlay */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end md:items-center md:justify-center">
-          <div className="bg-white w-full md:max-w-lg rounded-t-2xl md:rounded-2xl p-6 max-h-[95vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">{editingId ? 'Edit Category' : 'Create Category'}</h2>
-              <button onClick={() => setShowForm(false)} className="p-2 hover:bg-gray-100 rounded-lg">
+        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white w-full max-w-md rounded-2xl border border-slate-100 shadow-2xl p-6 relative overflow-hidden animate-slide-up">
+            <div className="flex items-center justify-between mb-6 pb-2 border-b border-slate-100">
+              <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
+                {editingId ? 'Edit Kategori' : 'Tambah Kategori'}
+              </h2>
+              <button
+                onClick={() => setShowForm(false)}
+                className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors"
+              >
                 <X size={20} />
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Name</label>
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Nama Kategori</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                   className="input"
+                  placeholder="Contoh: Belanja Bulanan, Gaji Pokok"
                   required
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Type</label>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Tipe Kategori</label>
                   <select
                     value={formData.type}
                     onChange={(e) =>
@@ -332,21 +369,31 @@ export default function CategoriesPage() {
                         parent_category_id: '',
                       }))
                     }
-                    className="input"
+                    className="input appearance-none bg-no-repeat"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml;utf8,<svg fill='none' stroke='%2364748B' stroke-width='2' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'></path></svg>")`,
+                      backgroundPosition: 'right 1rem center',
+                      backgroundSize: '1rem'
+                    }}
                   >
-                    <option value="expense">Expense</option>
-                    <option value="income">Income</option>
+                    <option value="expense">Pengeluaran (Expense)</option>
+                    <option value="income">Pemasukan (Income)</option>
                   </select>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Parent Category (Optional)</label>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Parent Category</label>
                   <select
                     value={formData.parent_category_id}
                     onChange={(e) => setFormData((prev) => ({ ...prev, parent_category_id: e.target.value }))}
-                    className="input"
+                    className="input appearance-none bg-no-repeat"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml;utf8,<svg fill='none' stroke='%2364748B' stroke-width='2' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'></path></svg>")`,
+                      backgroundPosition: 'right 1rem center',
+                      backgroundSize: '1rem'
+                    }}
                   >
-                    <option value="">No parent (Top level)</option>
+                    <option value="">Tidak ada (Kategori Utama)</option>
                     {availableParentOptions.map((cat) => (
                       <option key={getCategoryId(cat)} value={String(getCategoryId(cat))}>
                         {cat.name}
@@ -354,24 +401,27 @@ export default function CategoriesPage() {
                     ))}
                   </select>
                 </div>
+              </div>
 
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Color</label>
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Pilih Warna</label>
+                <div className="flex items-center gap-3">
                   <input
                     type="color"
                     value={formData.color_code}
                     onChange={(e) => setFormData((prev) => ({ ...prev, color_code: e.target.value }))}
-                    className="input h-11 p-1"
+                    className="w-12 h-10 p-0.5 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer"
                   />
+                  <span className="text-xs font-mono font-bold text-slate-500 uppercase tracking-wider">{formData.color_code}</span>
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-3 pt-4 border-t border-slate-100 mt-6">
                 <button type="button" onClick={() => setShowForm(false)} className="btn-secondary flex-1">
-                  Cancel
+                  Batal
                 </button>
-                <button type="submit" disabled={submitting} className="btn-primary flex-1 disabled:opacity-50">
-                  {submitting ? 'Saving...' : editingId ? 'Update' : 'Create'}
+                <button type="submit" disabled={submitting} className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed">
+                  {submitting ? 'Menyimpan...' : editingId ? 'Simpan' : 'Tambah'}
                 </button>
               </div>
             </form>
