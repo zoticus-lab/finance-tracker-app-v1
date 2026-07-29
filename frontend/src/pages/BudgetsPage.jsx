@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Edit2, Trash2, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, TrendingUp } from 'lucide-react';
 import { useData } from '../hooks/useData';
 import { formatCurrency } from '../utils/formatters';
 import LoadingSpinner from '../components/LoadingSpinner';

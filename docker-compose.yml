@@ -24,4 +24,4 @@ services:
 
 networks:
   finance-db_default:
-    driver: bridge
+    external: true
